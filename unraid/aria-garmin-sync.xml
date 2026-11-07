@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>aria-garmin-sync</Name>
+  <Repository>ghcr.io/johnnyfleet/aria-garmin-sync:latest</Repository>
+  <Registry>https://github.com/johnnyfleet/aria-garmin-sync/pkgs/container/aria-garmin-sync</Registry>
+  <Network>bridge</Network>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Project>https://github.com/johnnyfleet/aria-garmin-sync</Project>
+  <Overview>Syncs Fitbit Aria weigh-ins (weight + body fat) from the Google Health API to Garmin Connect. Google and Garmin tokens live in /data (google_client_secret.json, google_token.json, garmin_tokens.json).</Overview>
+  <Category>Tools:</Category>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/aria-garmin-sync" Mode="rw" Description="Tokens, SQLite state and .env" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/aria-garmin-sync</Config>
+  <Config Name="TZ" Target="TZ" Default="Pacific/Auckland" Mode="" Description="Timezone for logs and Slack messages" Type="Variable" Display="always" Required="false" Mask="false">Pacific/Auckland</Config>
+  <Config Name="Slack webhook URL" Target="ARIA_SYNC_SLACK_WEBHOOK" Default="" Mode="" Description="Incoming webhook for the alerts channel (overrides .env)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="Healthchecks.io ping URL" Target="ARIA_SYNC_HEALTHCHECK_URL" Default="" Mode="" Description="e.g. https://hc-ping.com/&lt;uuid&gt; (overrides .env)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="Poll interval (s)" Target="ARIA_SYNC_POLL_INTERVAL" Default="300" Mode="" Description="Seconds between Google Health polls" Type="Variable" Display="always" Required="false" Mask="false">300</Config>
+</Container>

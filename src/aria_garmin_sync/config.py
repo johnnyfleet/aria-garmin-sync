@@ -23,7 +23,10 @@ GARMIN_TOKEN = Path(os.environ.get("ARIA_SYNC_GARMIN_TOKEN", DATA_DIR / "garmin_
 
 
 def _load_env_file(path: Path) -> None:
-    """Load KEY=VALUE lines into os.environ without overriding real environment variables."""
+    """Load KEY=VALUE lines into os.environ without overriding non-empty real environment variables.
+
+    Empty values count as unset, since Unraid passes blank template fields as empty strings.
+    """
     try:
         lines = path.read_text().splitlines()
     except FileNotFoundError:
@@ -33,7 +36,8 @@ def _load_env_file(path: Path) -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+        if not os.environ.get(key.strip()):
+            os.environ[key.strip()] = value.strip().strip("'\"")
 
 
 _load_env_file(DATA_DIR / ".env")
@@ -47,3 +51,5 @@ LOOKBACK_DAYS = int(os.environ.get("ARIA_SYNC_LOOKBACK_DAYS", "2"))
 BODY_FAT_WAIT = int(os.environ.get("ARIA_SYNC_BODY_FAT_WAIT", "180"))  # seconds
 # Repeat an unresolved failure alert this often.
 FAILURE_REMINDER = int(os.environ.get("ARIA_SYNC_FAILURE_REMINDER", str(24 * 3600)))  # seconds
+# Touched after each successful cycle; the Docker HEALTHCHECK checks its age.
+HEARTBEAT = DATA_DIR / "heartbeat"

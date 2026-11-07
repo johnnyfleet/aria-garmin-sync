@@ -101,5 +101,6 @@ def run_forever() -> None:
         else:
             handle_success(store)
             notify.healthcheck(True, f"{len(uploaded)} uploaded")
+            config.HEARTBEAT.touch()
         stop.wait(config.POLL_INTERVAL)
     log.info("Stopped")
