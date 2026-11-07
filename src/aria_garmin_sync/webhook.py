@@ -37,6 +37,25 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", "0")
         self.end_headers()
 
+    def _read_body(self) -> bytes | None:
+        """Read a Content-Length or chunked body; None if it exceeds MAX_BODY."""
+        if "chunked" in self.headers.get("Transfer-Encoding", "").lower():
+            body = b""
+            while True:
+                size = int(self.rfile.readline().split(b";", 1)[0].strip() or b"0", 16)
+                if size == 0:
+                    self.rfile.readline()
+                    return body
+                body += self.rfile.read(size)
+                self.rfile.readline()
+                if len(body) > MAX_BODY:
+                    return None
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = 0
+        return None if length > MAX_BODY else self.rfile.read(length)
+
     def do_GET(self):
         self._reply(404)
 
@@ -56,16 +75,13 @@ class _Handler(BaseHTTPRequestHandler):
         if not hmac.compare_digest(self.headers.get("Authorization", "").encode(), config.WEBHOOK_SECRET.encode()):
             log.info("Rejected webhook with bad/missing Authorization")
             return self._reply(401)
-        try:
-            length = int(self.headers.get("Content-Length", "0"))
-        except ValueError:
-            return self._reply(400)
-        if length > MAX_BODY:
+        body = self._read_body()
+        if body is None:
             return self._reply(413)
-        body = self.rfile.read(length)
         try:
             payload = json.loads(body)
         except ValueError:
+            log.info("Rejected webhook with unparseable body (%d bytes)", len(body))
             return self._reply(400)
 
         if isinstance(payload, dict) and payload.get("type") == "verification":

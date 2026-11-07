@@ -6,6 +6,8 @@ import logging
 import os
 import secrets
 import sys
+
+import requests
 from datetime import UTC, date, datetime, timedelta
 
 from . import config, garmin, notify, subscriber, sync
@@ -154,6 +156,28 @@ def cmd_webhook_subscriber(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2))
 
 
+def cmd_webhook_test(args: argparse.Namespace) -> None:
+    """Replay Google's two verification requests against the public endpoint."""
+    url = args.base.rstrip("/") + config.WEBHOOK_PATH
+    body = b'{"type": "verification"}'
+    headers = {"User-Agent": "Google-Health-API-Webhooks", "Content-Type": "application/json"}
+    checks = [
+        ("with secret", {**headers, "Authorization": config.WEBHOOK_SECRET}, {200, 201}),
+        ("without secret", headers, {401, 403}),
+    ]
+    ok = True
+    for label, h, want in checks:
+        try:
+            resp = requests.post(url, data=body, headers=h, timeout=15)
+            got = f"HTTP {resp.status_code}"
+            passed = resp.status_code in want
+        except requests.RequestException as e:
+            got, passed = f"{type(e).__name__}: {e}", False
+        ok &= passed
+        print(f"{'PASS' if passed else 'FAIL'}  {label:15} want {sorted(want)}, got {got}")
+    print("Handshake looks good." if ok else "Handshake would fail; Google will return FAILED_PRECONDITION.")
+
+
 def _drop_root() -> None:
     """Run as PUID:PGID (default Unraid nobody:users) when started as root.
 
@@ -222,6 +246,10 @@ def main() -> None:
     p.add_argument("--project-number", required=True, help="Cloud project NUMBER, not ID")
     p.add_argument("--url", help="public endpoint, e.g. https://aria-sync.<tailnet>.ts.net/hook/...")
     p.set_defaults(func=cmd_webhook_subscriber)
+
+    p = sub.add_parser("webhook-test", help="Replay Google's verification handshake against the public URL")
+    p.add_argument("--base", required=True, help="e.g. https://aria-sync.<tailnet>.ts.net (path comes from config)")
+    p.set_defaults(func=cmd_webhook_test)
 
     p = sub.add_parser("test-alerts", help="Send a test Slack message and healthcheck ping")
     p.set_defaults(func=cmd_test_alerts)
