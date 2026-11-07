@@ -53,3 +53,10 @@ BODY_FAT_WAIT = int(os.environ.get("ARIA_SYNC_BODY_FAT_WAIT", "180"))  # seconds
 FAILURE_REMINDER = int(os.environ.get("ARIA_SYNC_FAILURE_REMINDER", str(24 * 3600)))  # seconds
 # Touched after each successful cycle; the Docker HEALTHCHECK checks its age.
 HEARTBEAT = DATA_DIR / "heartbeat"
+
+# Webhook receiver (exposed via Tailscale Funnel). Disabled unless both path and secret are set.
+WEBHOOK_PORT = int(os.environ.get("ARIA_SYNC_WEBHOOK_PORT", "8080"))
+WEBHOOK_PATH = os.environ.get("ARIA_SYNC_WEBHOOK_PATH", "")  # e.g. /hook/<random>
+# Full Authorization header value Google sends, e.g. "Bearer <random>".
+WEBHOOK_SECRET = os.environ.get("ARIA_SYNC_WEBHOOK_SECRET", "")
+WEBHOOK_VERIFY_SIGNATURE = os.environ.get("ARIA_SYNC_WEBHOOK_VERIFY_SIGNATURE", "true").lower() != "false"

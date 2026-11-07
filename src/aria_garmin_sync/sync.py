@@ -6,12 +6,15 @@ import threading
 import time
 from datetime import UTC, datetime, timedelta
 
-from . import config, garmin, notify
+from . import config, garmin, notify, webhook
 from .health import HealthClient, since_filter
 from .readings import Reading, pair
 from .store import Store
 
 log = logging.getLogger(__name__)
+
+HELD_RETRY = 60  # seconds between checks while a weight waits for body fat
+WEBHOOK_SETTLE = 10  # seconds to wait after a webhook before syncing
 
 
 def describe(r: Reading) -> str:
@@ -28,19 +31,21 @@ def fetch_readings(days: int) -> list[Reading]:
     )
 
 
-def run_once(store: Store) -> list[Reading]:
-    """Upload any new readings. Returns the readings uploaded this cycle."""
+def run_once(store: Store) -> tuple[list[Reading], int]:
+    """Upload any new readings. Returns (readings uploaded, readings held waiting for body fat)."""
     now = datetime.now(UTC)
     pending = []
+    held = 0
     for r in fetch_readings(config.LOOKBACK_DAYS):
         if store.is_synced(r.id):
             continue
         if r.fat_pct is None and (now - r.time).total_seconds() < config.BODY_FAT_WAIT:
             log.info("Holding %s until body fat arrives", r.id)
+            held += 1
             continue
         pending.append(r)
     if not pending:
-        return []
+        return [], held
 
     client = garmin.connect()  # only touch Garmin when there's something to do
     uploaded = []
@@ -55,7 +60,7 @@ def run_once(store: Store) -> list[Reading]:
         log.info("Uploaded: %s", describe(r))
         lag = (datetime.now(UTC) - r.time).total_seconds() / 60
         notify.slack(f":white_check_mark: Synced to Garmin: {describe(r)} ({lag:.0f} min after weigh-in)")
-    return uploaded
+    return uploaded, held
 
 
 def _failure_key(e: Exception) -> str:
@@ -86,14 +91,22 @@ def handle_success(store: Store) -> None:
 
 def run_forever() -> None:
     stop = threading.Event()
-    signal.signal(signal.SIGTERM, lambda *_: stop.set())
-    signal.signal(signal.SIGINT, lambda *_: stop.set())
+    wake = threading.Event()  # set by the webhook receiver, and on shutdown
 
+    def _stop(*_):
+        stop.set()
+        wake.set()
+
+    signal.signal(signal.SIGTERM, _stop)
+    signal.signal(signal.SIGINT, _stop)
+
+    webhook.start(wake)
     store = Store()
     log.info("Polling every %ss (lookback %s days)", config.POLL_INTERVAL, config.LOOKBACK_DAYS)
     while not stop.is_set():
+        held = 0
         try:
-            uploaded = run_once(store)
+            uploaded, held = run_once(store)
         except Exception as e:
             log.exception("Sync cycle failed")
             handle_failure(store, e)
@@ -102,5 +115,9 @@ def run_forever() -> None:
             handle_success(store)
             notify.healthcheck(True, f"{len(uploaded)} uploaded")
             config.HEARTBEAT.touch()
-        stop.wait(config.POLL_INTERVAL)
+        # Re-check soon if a weight is waiting for its body-fat reading.
+        if wake.wait(HELD_RETRY if held else config.POLL_INTERVAL) and not stop.is_set():
+            log.info("Woken by webhook")
+            stop.wait(WEBHOOK_SETTLE)  # let the matching weight/body-fat notification land too
+        wake.clear()
     log.info("Stopped")

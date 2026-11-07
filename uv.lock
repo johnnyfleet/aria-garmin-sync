@@ -11,6 +11,7 @@ name = "aria-garmin-sync"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "cryptography" },
     { name = "curl-cffi" },
     { name = "garminconnect" },
     { name = "google-auth" },
@@ -20,6 +21,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cryptography", specifier = ">=43" },
     { name = "curl-cffi" },
     { name = "garminconnect", specifier = ">=0.3" },
     { name = "google-auth", specifier = ">=2.30" },

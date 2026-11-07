@@ -3,10 +3,12 @@
 import argparse
 import json
 import logging
+import os
+import secrets
 import sys
 from datetime import UTC, date, datetime, timedelta
 
-from . import config, garmin, notify, sync
+from . import config, garmin, notify, subscriber, sync
 from .google_auth import AuthError, authorize, load_credentials, load_meta
 from .health import HealthApiError, HealthClient, since_filter
 from .readings import Reading, pair
@@ -123,10 +125,10 @@ def cmd_run(args: argparse.Namespace) -> None:
 
 def cmd_sync_once(args: argparse.Namespace) -> None:
     store = Store()
-    uploaded = sync.run_once(store)
+    uploaded, held = sync.run_once(store)
     sync.handle_success(store)
     notify.healthcheck(True, f"{len(uploaded)} uploaded (manual)")
-    print(f"{len(uploaded)} reading(s) uploaded")
+    print(f"{len(uploaded)} reading(s) uploaded, {held} waiting for body fat")
 
 
 def cmd_test_alerts(args: argparse.Namespace) -> None:
@@ -135,7 +137,40 @@ def cmd_test_alerts(args: argparse.Namespace) -> None:
     print(f"Slack configured: {bool(config.SLACK_WEBHOOK)}; healthcheck configured: {bool(config.HEALTHCHECK_URL)}")
 
 
+def cmd_webhook_secret(args: argparse.Namespace) -> None:
+    print(f"ARIA_SYNC_WEBHOOK_PATH=/hook/{secrets.token_urlsafe(24)}")
+    print(f"ARIA_SYNC_WEBHOOK_SECRET=Bearer {secrets.token_urlsafe(32)}")
+
+
+def cmd_webhook_subscriber(args: argparse.Namespace) -> None:
+    if args.action == "create":
+        if not (args.url and config.WEBHOOK_SECRET):
+            raise SystemExit("create needs --url and ARIA_SYNC_WEBHOOK_SECRET (env or data/.env)")
+        result = subscriber.create(args.project_number, args.url, config.WEBHOOK_SECRET)
+    elif args.action == "list":
+        result = subscriber.list_all(args.project_number)
+    else:
+        result = subscriber.delete(args.project_number)
+    print(json.dumps(result, indent=2))
+
+
+def _drop_root() -> None:
+    """Run as PUID:PGID (default Unraid nobody:users) when started as root.
+
+    The container starts as root so Unraid's Tailscale hook can install itself;
+    this also covers `docker exec` sessions, so token files never end up root-owned.
+    """
+    if os.getuid() != 0:
+        return
+    uid = int(os.environ.get("PUID", "99"))
+    gid = int(os.environ.get("PGID", "100"))
+    os.setgroups([])
+    os.setgid(gid)
+    os.setuid(uid)
+
+
 def main() -> None:
+    _drop_root()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     parser = argparse.ArgumentParser(prog="aria-sync")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -179,12 +214,21 @@ def main() -> None:
     p = sub.add_parser("sync-once", help="Run a single sync cycle")
     p.set_defaults(func=cmd_sync_once)
 
+    p = sub.add_parser("webhook-secret", help="Generate a random webhook path and Authorization secret")
+    p.set_defaults(func=cmd_webhook_secret)
+
+    p = sub.add_parser("webhook-subscriber", help="Create/list/delete the Google Health webhook subscriber (uses gcloud)")
+    p.add_argument("action", choices=["create", "list", "delete"])
+    p.add_argument("--project-number", required=True, help="Cloud project NUMBER, not ID")
+    p.add_argument("--url", help="public endpoint, e.g. https://aria-sync.<tailnet>.ts.net/hook/...")
+    p.set_defaults(func=cmd_webhook_subscriber)
+
     p = sub.add_parser("test-alerts", help="Send a test Slack message and healthcheck ping")
     p.set_defaults(func=cmd_test_alerts)
 
     args = parser.parse_args()
     try:
         args.func(args)
-    except (AuthError, HealthApiError, garmin.GarminAuthError) as e:
+    except (AuthError, HealthApiError, garmin.GarminAuthError, RuntimeError) as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)

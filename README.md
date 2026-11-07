@@ -14,7 +14,7 @@ This project fills the gap for my own account until that changes.
 ## How it works
 
 ```
-Aria --wifi--> Fitbit / Google Health --(poll every 5 min)--> aria-sync --> Garmin Connect
+Aria --wifi--> Fitbit / Google Health --(webhook via Tailscale Funnel, + polling)--> aria-sync --> Garmin Connect
 ```
 
 1. Reads new `weight` and `body-fat` data points from the Google Health API, using Google OAuth with a long-lived refresh token.
@@ -28,6 +28,7 @@ Aria --wifi--> Fitbit / Google Health --(poll every 5 min)--> aria-sync --> Garm
 - [Google OAuth setup](docs/google-oauth-setup.md): Cloud project, consent screen (published, so tokens don't expire after 7 days), OAuth client, first consent.
 - `aria-sync garmin-login`: one-off interactive Garmin login, including email MFA. Later runs use the saved tokens only.
 - [Deploying on Unraid](docs/unraid-deploy.md): GHCR image, Unraid template, copying tokens over.
+- [Webhooks](docs/webhooks.md): near-instant sync through Tailscale Funnel (Unraid's per-container Tailscale toggle).
 
 Local development uses a Nix flake devshell (`direnv allow`), and Python dependencies are managed with uv.
 
@@ -41,6 +42,7 @@ Local development uses a Nix flake devshell (`direnv allow`), and Python depende
 | `aria-sync push-latest [--dry-run]` | Upload the most recent reading |
 | `aria-sync google-auth` / `google-status` / `google-fetch` | Google consent, token check, raw data dump |
 | `aria-sync garmin-login` / `garmin-check` | Garmin login, token check and recent weigh-ins |
+| `aria-sync webhook-secret` / `webhook-subscriber create\|list\|delete` | Webhook path/secret, Google subscriber management |
 | `aria-sync test-alerts` | Send a test Slack message and healthcheck ping |
 
 ## Caveats

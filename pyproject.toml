@@ -9,6 +9,7 @@ dependencies = [
     "requests>=2.32",
     "garminconnect>=0.3",
     "curl_cffi",
+    "cryptography>=43",
 ]
 
 [project.scripts]

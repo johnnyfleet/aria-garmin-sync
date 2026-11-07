@@ -18,9 +18,11 @@ ENV PATH="/app/.venv/bin:$PATH" \
     HOME=/tmp \
     TZ=Pacific/Auckland
 
-# Unraid's nobody:users, so files in appdata keep sensible ownership.
-USER 99:100
+# Starts as root so Unraid's Tailscale hook can install itself; aria-sync then
+# drops to PUID:PGID (default 99:100, Unraid's nobody:users) before doing anything.
+ENV PUID=99 PGID=100
 VOLUME /data
+EXPOSE 8080
 
 # Unhealthy if no successful cycle in 3 poll intervals (default 15 min).
 HEALTHCHECK --interval=5m --start-period=2m \
