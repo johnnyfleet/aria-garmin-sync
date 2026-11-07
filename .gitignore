@@ -1,0 +1,9 @@
+.direnv/
+.venv/
+__pycache__/
+*.egg-info/
+
+# Secrets: OAuth client, tokens, local state
+data/
+client_secret*.json
+.env
