@@ -1,0 +1,43 @@
+# Version updates for minor/patch releases (majors are ignored and handled by hand).
+# Security updates are switched on separately in repo settings and also go through CI;
+# a security fix that needs a major bump is left open for review.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Pacific/Auckland
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      python:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Pacific/Auckland
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # Python minor bumps (3.12 -> 3.13) need the Nix devshell updated too; do those by hand.
+      - dependency-name: python
+        update-types: ["version-update:semver-minor"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Pacific/Auckland
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      actions:
+        update-types: [minor, patch]

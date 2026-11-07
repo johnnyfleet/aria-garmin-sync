@@ -29,6 +29,7 @@ Aria --wifi--> Fitbit / Google Health --(webhook via Tailscale Funnel, + polling
 - `aria-sync garmin-login`: one-off interactive Garmin login, including email MFA. Later runs use the saved tokens only.
 - [Deploying on Unraid](docs/unraid-deploy.md): GHCR image, Unraid template, copying tokens over.
 - [Webhooks](docs/webhooks.md): near-instant sync through Tailscale Funnel (Unraid's per-container Tailscale toggle).
+- [Automatic updates](docs/updates.md): Dependabot + CI tests, auto-merge and publish for non-major updates.
 
 Local development uses a Nix flake devshell (`direnv allow`), and Python dependencies are managed with uv.
 

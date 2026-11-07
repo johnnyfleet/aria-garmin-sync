@@ -1,0 +1,55 @@
+{
+  "primaryKeyId": 2280854714,
+  "key": [
+    {
+      "keyData": {
+        "typeUrl": "type.googleapis.com/google.crypto.tink.EcdsaPublicKey",
+        "value": "EgYIAxACGAIaIQBYMWbRCkGhn5ikaiDBVgfukm2WSNJapsTU73m2vDmU2iIhAGVXNnrf4uGhixf4wnbNyS7ZU97MSmIlMEnpdNiEaji0",
+        "keyMaterialType": "ASYMMETRIC_PUBLIC"
+      },
+      "status": "ENABLED",
+      "keyId": 1083906037,
+      "outputPrefixType": "TINK"
+    },
+    {
+      "keyData": {
+        "typeUrl": "type.googleapis.com/google.crypto.tink.EcdsaPublicKey",
+        "value": "EgYIAxACGAIaIQBqSSuvCzYrqlAdvkxcD6RhOcT9NogsJ9IicpsoSRooVyIhAL6inwRpLWJpBBIZuA/NKZuXSPOltgx5Nr2dCwbTYXoQ",
+        "keyMaterialType": "ASYMMETRIC_PUBLIC"
+      },
+      "status": "ENABLED",
+      "keyId": 257403691,
+      "outputPrefixType": "TINK"
+    },
+    {
+      "keyData": {
+        "typeUrl": "type.googleapis.com/google.crypto.tink.EcdsaPublicKey",
+        "value": "EgYIAxACGAIaIQDcgVK6a0DoK86MqsLIaHJAZc0V6wdbJX4hoav6UteXgSIhAB4L+oarikKoBQuFCp/DOeCnLAcZnXaSVMTSFlLfFqoN",
+        "keyMaterialType": "ASYMMETRIC_PUBLIC"
+      },
+      "status": "ENABLED",
+      "keyId": 3908867516,
+      "outputPrefixType": "TINK"
+    },
+    {
+      "keyData": {
+        "typeUrl": "type.googleapis.com/google.crypto.tink.EcdsaPublicKey",
+        "value": "EgYIAxACGAIaIQCIzcy8t+sL9L+sRQoMi137RNzNZNwhrmX2GFMXI8bNyiIhAO5YZDWEqK4ZVheKzZTEi0MZ1ylp0R/7wpBFsZZ1NuhF",
+        "keyMaterialType": "ASYMMETRIC_PUBLIC"
+      },
+      "status": "ENABLED",
+      "keyId": 2280854714,
+      "outputPrefixType": "TINK"
+    },
+    {
+      "keyData": {
+        "typeUrl": "type.googleapis.com/google.crypto.tink.EcdsaPublicKey",
+        "value": "EgYIAxACGAIaIQDb2V8iziZSz3e1heaMGm+FrkFM2RUKCWQoCoZYylyUeCIhAAfeUJcLl8EAAsRNgtlgi7z614c16574/FV5wpZK5dnC",
+        "keyMaterialType": "ASYMMETRIC_PUBLIC"
+      },
+      "status": "ENABLED",
+      "keyId": 32750332,
+      "outputPrefixType": "TINK"
+    }
+  ]
+}

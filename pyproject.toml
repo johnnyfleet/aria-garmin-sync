@@ -12,6 +12,12 @@ dependencies = [
     "cryptography>=43",
 ]
 
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [project.scripts]
 aria-sync = "aria_garmin_sync.cli:main"
 

@@ -114,5 +114,5 @@ def start(wake: threading.Event) -> ThreadingHTTPServer | None:
     server = ThreadingHTTPServer(("0.0.0.0", config.WEBHOOK_PORT), handler)
     server.daemon_threads = True
     threading.Thread(target=server.serve_forever, name="webhook", daemon=True).start()
-    log.info("Webhook receiver listening on :%d", config.WEBHOOK_PORT)
+    log.info("Webhook receiver listening on :%d", server.server_address[1])
     return server

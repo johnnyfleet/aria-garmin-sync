@@ -18,10 +18,10 @@ docker login ghcr.io -u johnnyfleet
 The Google and Garmin tokens from the laptop are portable, so there's no need to log in again on Unraid:
 
 ```sh
-ssh root@big-john mkdir -p /mnt/user/appdata/aria-garmin-sync
+ssh root@<unraid> mkdir -p /mnt/user/appdata/aria-garmin-sync
 scp data/{google_client_secret.json,google_token.json,google_token_meta.json,garmin_tokens.json,state.db} \
-    root@big-john:/mnt/user/appdata/aria-garmin-sync/
-ssh root@big-john 'cd /mnt/user/appdata/aria-garmin-sync && chown -R 99:100 . && chmod 700 . && chmod 600 *'
+    root@<unraid>:/mnt/user/appdata/aria-garmin-sync/
+ssh root@<unraid> 'cd /mnt/user/appdata/aria-garmin-sync && chown -R 99:100 . && chmod 700 . && chmod 600 *'
 ```
 
 **Stop any local `aria-sync run` afterwards.** Two instances would both refresh the same tokens.
@@ -30,7 +30,7 @@ ssh root@big-john 'cd /mnt/user/appdata/aria-garmin-sync && chown -R 99:100 . &&
 ## 3. Add the container
 
 ```sh
-scp unraid/aria-garmin-sync.xml root@big-john:/boot/config/plugins/dockerMan/templates-user/my-aria-garmin-sync.xml
+scp unraid/aria-garmin-sync.xml root@<unraid>:/boot/config/plugins/dockerMan/templates-user/my-aria-garmin-sync.xml
 ```
 
 Then go to Docker → Add Container → Template → `aria-garmin-sync`, paste the Slack webhook and healthchecks.io URLs from `data/.env` into their (masked) fields, and Apply.
