@@ -91,6 +91,13 @@ Candidate libraries:
 
 **Recommendation:** use Option A if n8n already runs on Unraid; otherwise Option B. Either way, start with polling and add webhooks later.
 
+### Decided (8 Nov 2026)
+- **Option B**: a single Python container, no n8n.
+- **Webhook ingress:** use **Unraid's built-in per-container Tailscale toggle** with **Funnel**. Don't use a Tailscale sidecar. Funnel exposes the whole container port, so the app's public port serves *only* the webhook route (long random path, `Authorization` secret check returning a fast 401, signature verification, size limit). Status and admin pages go on a separate tailnet-only port.
+- **Alerts:** a Slack incoming webhook posts to a dedicated channel on every successful sync and on failures (state changes plus a daily reminder; token-expiry messages name the re-login command).
+- **Liveness:** a healthchecks.io ping after every poll cycle (even with no new readings), and `/fail` on errors. This watches the service, not the weigh-ins.
+- **Google Health data shape:** a weigh-in's weight and body-fat points share the same data-point ID and `sampleTime`. Weight is `weight.weightGrams`; body fat is `bodyFat.percentage`. The time is `sampleTime.physicalTime` (UTC) plus `utcOffset` (e.g. `"46800s"`).
+
 ## Open questions / to verify first
 - [ ] Can an unverified OAuth app with Google Health restricted scopes be set to **In production** without review? (Removes the 7-day expiry.) Google's docs say the 100-user cap applies "for both testing and production", which implies yes. Not confirmed in practice yet: `aria-sync google-auth` prints `refresh_token_expires_in` from the token response (604799 = 7 days means Testing rules still apply). Setup steps are in `docs/google-oauth-setup.md`; it uses a **Desktop app** OAuth client with a localhost callback.
 - [x] Do Google Health webhooks support `weight` / `body-fat`? **Yes** (confirmed 5 Nov 2026).
