@@ -74,10 +74,10 @@ If that fails you'll get `FAILED_PRECONDITION`; check the container log for `Ans
 `aria-sync webhook-subscriber list|delete --project-number 138252193496` manages it afterwards.
 If you change the secret, delete and re-create the subscriber.
 
-## 5. Test, then slow polling down
+## 5. Test
 
 Weigh in, then watch `docker logs -f aria-garmin-sync` for `Webhook: UPSERT weight` → `Woken by webhook`
 → `Uploaded`. The Slack message shows the delay since the weigh-in.
 
-Once that's reliable, set **Poll interval** to `3600` and change the healthchecks.io check's **period to 1 hour**
-(keep about 1 hour of grace). Otherwise healthchecks.io will flag every quiet hour as down.
+Polling runs hourly by default (`3600`) as a safety net for missed webhooks. Keep the healthchecks.io check's
+**period at 1 hour** (with about 1 hour of grace). If you lower **Poll interval** while testing, lower the period to match.

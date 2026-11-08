@@ -29,9 +29,9 @@ ENV PUID=99 PGID=100
 VOLUME /data
 EXPOSE 8080
 
-# Unhealthy if no successful cycle in 3 poll intervals (default 15 min).
+# Unhealthy if no successful cycle in 3 poll intervals (default 3 hours).
 HEALTHCHECK --interval=5m --start-period=2m \
-    CMD python -c "import os,sys,time; i=int(os.environ.get('ARIA_SYNC_POLL_INTERVAL','300')); sys.exit(time.time()-os.path.getmtime('/data/heartbeat') > 3*i)"
+    CMD python -c "import os,sys,time; i=int(os.environ.get('ARIA_SYNC_POLL_INTERVAL','3600')); sys.exit(time.time()-os.path.getmtime('/data/heartbeat') > 3*i)"
 
 ENTRYPOINT ["aria-sync"]
 CMD ["run"]

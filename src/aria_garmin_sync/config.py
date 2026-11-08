@@ -45,7 +45,7 @@ _load_env_file(DATA_DIR / ".env")
 STATE_DB = Path(os.environ.get("ARIA_SYNC_STATE_DB", DATA_DIR / "state.db"))
 SLACK_WEBHOOK = os.environ.get("ARIA_SYNC_SLACK_WEBHOOK")
 HEALTHCHECK_URL = os.environ.get("ARIA_SYNC_HEALTHCHECK_URL")
-POLL_INTERVAL = int(os.environ.get("ARIA_SYNC_POLL_INTERVAL", "300"))  # seconds
+POLL_INTERVAL = int(os.environ.get("ARIA_SYNC_POLL_INTERVAL", "3600"))  # seconds; webhooks do the fast path
 LOOKBACK_DAYS = int(os.environ.get("ARIA_SYNC_LOOKBACK_DAYS", "2"))
 # How long to hold a weight that has no body-fat reading yet before uploading it alone.
 BODY_FAT_WAIT = int(os.environ.get("ARIA_SYNC_BODY_FAT_WAIT", "180"))  # seconds
