@@ -96,6 +96,7 @@ Candidate libraries:
 - **Webhook ingress:** use **Unraid's built-in per-container Tailscale toggle** with **Funnel**. Don't use a Tailscale sidecar. Funnel exposes the whole container port, so the app's public port serves *only* the webhook route (long random path, `Authorization` secret check returning a fast 401, signature verification, size limit). Status and admin pages go on a separate tailnet-only port.
 - **Alerts:** a Slack incoming webhook posts to a dedicated channel on every successful sync and on failures (state changes plus a daily reminder; token-expiry messages name the re-login command).
 - **Webhooks implemented** (`docs/webhooks.md`): the notification only wakes the sync loop, which re-reads Google itself. There is no reconcile call. The container starts as root for Unraid's Tailscale hook, and `aria-sync` drops to PUID:PGID (99:100).
+- **Poll interval default is 3600s** (hourly safety net) now that webhooks work; weigh-ins happen every 1–2 weeks.
 - **Liveness:** a healthchecks.io ping after every poll cycle (even with no new readings), and `/fail` on errors. This watches the service, not the weigh-ins.
 - **Google Health data shape:** a weigh-in's weight and body-fat points share the same data-point ID and `sampleTime`. Weight is `weight.weightGrams`; body fat is `bodyFat.percentage`. The time is `sampleTime.physicalTime` (UTC) plus `utcOffset` (e.g. `"46800s"`).
 

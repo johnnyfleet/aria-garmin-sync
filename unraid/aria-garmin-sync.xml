@@ -9,6 +9,7 @@
   <Project>https://github.com/johnnyfleet/aria-garmin-sync</Project>
   <Overview>Syncs Fitbit Aria weigh-ins (weight + body fat) from the Google Health API to Garmin Connect. Google and Garmin tokens live in /data (google_client_secret.json, google_token.json, garmin_tokens.json).</Overview>
   <Category>Tools:</Category>
+  <Icon>https://play-lh.googleusercontent.com/wQVBsxZBX7buxjAlBIsBTRth7hknBOcbOUbzxNprfH22T9_ejF6VO5QC3CrMpvNivFvkyHHKvmiTnFO9P39S</Icon>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <Config Name="Data" Target="/data" Default="/mnt/user/appdata/aria-garmin-sync" Mode="rw" Description="Tokens, SQLite state and .env" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/aria-garmin-sync</Config>
   <Config Name="TZ" Target="TZ" Default="Pacific/Auckland" Mode="" Description="Timezone for logs and Slack messages" Type="Variable" Display="always" Required="false" Mask="false">Pacific/Auckland</Config>
@@ -17,5 +18,5 @@
   <Config Name="Webhook port" Target="8080" Default="8080" Mode="tcp" Description="Webhook receiver. Exposed publicly only through the container's Tailscale Funnel." Type="Port" Display="advanced" Required="false" Mask="false">8080</Config>
   <Config Name="Webhook path" Target="ARIA_SYNC_WEBHOOK_PATH" Default="" Mode="" Description="From `aria-sync webhook-secret`, e.g. /hook/&lt;random&gt;. Leave blank to disable webhooks." Type="Variable" Display="always" Required="false" Mask="true"></Config>
   <Config Name="Webhook secret" Target="ARIA_SYNC_WEBHOOK_SECRET" Default="" Mode="" Description="Full Authorization header value Google sends, e.g. Bearer &lt;random&gt;" Type="Variable" Display="always" Required="false" Mask="true"></Config>
-  <Config Name="Poll interval (s)" Target="ARIA_SYNC_POLL_INTERVAL" Default="300" Mode="" Description="Seconds between Google Health polls" Type="Variable" Display="always" Required="false" Mask="false">300</Config>
+  <Config Name="Poll interval (s)" Target="ARIA_SYNC_POLL_INTERVAL" Default="3600" Mode="" Description="Seconds between Google Health polls (a safety net; webhooks trigger syncs immediately)" Type="Variable" Display="always" Required="false" Mask="false">3600</Config>
 </Container>

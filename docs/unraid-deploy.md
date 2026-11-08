@@ -35,11 +35,14 @@ scp unraid/aria-garmin-sync.xml root@<unraid>:/boot/config/plugins/dockerMan/tem
 
 Then go to Docker → Add Container → Template → `aria-garmin-sync`, paste the Slack webhook and healthchecks.io URLs from `data/.env` into their (masked) fields, and Apply.
 
+The default poll interval is hourly (`3600`), because webhooks handle the fast path (see `docs/webhooks.md`).
+Set the healthchecks.io check's **period to 1 hour** with about 1 hour of grace, to match.
+
 Check that it's working:
 
-- `docker logs aria-garmin-sync` shows `Polling every 300s`.
-- After about 5 minutes, the healthchecks.io check is green and the Docker tab shows the container as **healthy**.
-- On your next weigh-in, Slack posts ✅ within about 5 minutes.
+- `docker logs aria-garmin-sync` shows `Polling every 3600s`.
+- The healthchecks.io check goes green after the first cycle (right after startup), and within about 5 minutes the Docker tab shows the container as **healthy**.
+- On your next weigh-in, Slack posts ✅ within a minute or two if webhooks are set up, or within an hour from polling alone.
 
 ## Re-authenticating later
 
